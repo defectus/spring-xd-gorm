@@ -1,0 +1,166 @@
+description = 'Sample Spring XD project'
+group = 'uk.co.linek.springXd'
+version = '1.0'
+
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+def extLibs = [
+		"antlr-2.7.6.jar",
+		"aspectjrt-1.6.8.jar",
+		"cglib-nodep-2.1_3.jar",
+		"commons-beanutils-1.7.0.jar",
+		"commons-codec-1.9.jar",
+		"commons-collections-3.2.jar",
+		"commons-dbcp-1.3.jar",
+		"commons-digester-1.6.jar",
+		"commons-el-1.0.jar",
+		"commons-io-1.4.jar",
+		"commons-lang-2.6.jar",
+		"commons-pool-1.5.4.jar",
+		"commons-validator-1.3.1.jar",
+		"concurrentlinkedhashmap-lru-1.0_jdk5.jar",
+		"c3p0-0.9.1.1.jar",
+		"dom4j-1.6.1.jar",
+		"ejb3-persistence-1.0.2.GA.jar",
+		"gant_groovy1.8-1.9.6.jar",
+		"gpars-1.2.1.jar",
+		"grails-bootstrap-2.4.4.jar",
+		"grails-async",
+		"grails-core",
+		"grails-docs-1.3.7.jar",
+		"grails-gorm-1.3.7.jar",
+		"grails-spring-2.4.4.jar",
+		"guava-14.0.1.jar",
+		"grails-datastore-core",
+		"grails-datastore-gorm",
+		"grails-plugin-converters",
+		"grails-plugin-validation",
+		"hibernate-annotations",
+		"hibernate-commons-annotations",
+		"hibernate-core",
+		"joda-time-hibernate-1.3.jar",
+		"jta-1.1.jar",
+		"org.springframework.uaa.client-1.0.3.RELEASE.jar",
+		"spring-asm-3.1.4.RELEASE.jar",
+		"spring-orm-3.2.12.RELEASE.jar",
+		"jsr166y"
+]
+
+
+configurations {
+	provided
+}
+
+sourceSets {
+	main.compileClasspath += configurations.provided
+	test.compileClasspath += configurations.provided
+	test.runtimeClasspath += configurations.provided
+}
+
+
+
+repositories {
+	maven {url "http://repo.spring.io/libs-snapshot"}
+	maven {url "http://repo.spring.io/plugins-release"}
+	maven {url 'http://repo.grails.org/grails/core/'}
+	mavenLocal()
+	mavenCentral()
+}
+
+ext {
+	junitVersion = '4.11'
+	springVersion = '4.1.2.RELEASE'
+	springIntegrationVersion = '4.1.0.RELEASE'
+	springBatchVersion = '3.0.1.RELEASE'
+	grailsVersion = '2.4.4'
+	gormVersion = '1.3.7'
+	springFrameworkUaaVersion = '1.0.3.RELEASE'
+	groovyVersion = '2.3.3'
+}
+
+dependencies {
+	provided "org.codehaus.groovy:groovy-all:$groovyVersion"
+	provided "org.springframework:spring-core:$springVersion"
+	provided "org.springframework:spring-context-support:$springVersion"
+	provided "org.springframework.integration:spring-integration-feed:$springIntegrationVersion"
+	provided "org.springframework.batch:spring-batch-core:$springBatchVersion"
+	compile 'org.springframework:spring-orm:3.2.12.RELEASE'
+	compile "org.springframework:spring-jms:$springVersion"
+	compile 'org.springframework:spring-asm:3.1.4.RELEASE'
+	compile "org.springframework:spring-oxm:$springVersion"
+	compile "org.grails:grails-gorm:$gormVersion"
+	compile "org.grails:grails-core:$gormVersion"
+	compile "org.grails:grails-docs:$gormVersion"
+	compile "org.grails:grails-bootstrap:$gormVersion"
+	compile "org.grails:grails-spring:$gormVersion"
+	compile 'org.hibernate:hibernate-core:3.3.1.GA'
+	compile 'org.hibernate:hibernate-annotations:3.4.0.GA'
+	compile 'org.hibernate:hibernate-commons-annotations:3.1.0.GA'
+	compile("joda-time:joda-time-hibernate:1.3") {
+		exclude module: "joda-time"
+		exclude module: "hibernate"
+	}
+	compile 'commons-codec:commons-codec:1.9'
+	compile 'com.google.guava:guava:14.0.1'
+	compile 'c3p0:c3p0:0.9.1.1'
+	compile 'commons-el:commons-el:1.0'
+	compile 'commons-lang:commons-lang:2.6'
+	compile("org.springframework.uaa:org.springframework.uaa.client:$springFrameworkUaaVersion") {
+		exclude group: 'org.springframework.roo.wrapping', module: '*'
+	}
+	compile 'org.codehaus.gpars:gpars:1.2.1'
+	compile 'com.lowagie:itext:4.2.1'
+	compile 'javax.servlet:javax.servlet-api:3.1.0'
+	compile 'com.h2database:h2:1.4.183'
+	compile 'org.slf4j:slf4j-api:1.7.7'
+
+	// Testing
+	testCompile "junit:junit:$junitVersion"
+	testCompile "org.springframework:spring-test:$springVersion"
+}
+
+jar {
+	exclude "uk/co/linek/domain/**"
+}
+
+task purgeDest(type: Delete) {
+	delete 'config', 'all', 'lib', 'ext'
+}
+
+processResources() {
+	destinationDir = new File("config")
+}
+
+task modelJar(type: Jar){
+	classifier = 'model'
+	from sourceSets.main.output
+	include "uk/co/linek/domain/**"
+}
+
+task copyToLib(type: Copy) {
+	into "lib"
+	from jar.archivePath
+}
+
+task copyToExt(type: Copy, dependsOn: copyToLib) {
+	from(configurations.runtime.filter {file -> extLibs.any {file.name.indexOf(it) > -1}})
+	from modelJar.archivePath
+	into "ext"
+}
+
+task copyToAll(type: Copy, dependsOn: copyToExt) {
+	from(configurations.runtime)
+	into "all"
+}
+
+jar.dependsOn modelJar
+build.dependsOn copyToAll
+clean.dependsOn purgeDest
+
+defaultTasks 'clean', 'build'
+

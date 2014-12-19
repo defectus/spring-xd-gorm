@@ -1,0 +1,66 @@
+diff -rupN bin/xd-admin customized/xd-admin
+--- bin/xd-admin	2014-11-18 17:35:30.000000000 +0100
++++ customized/xd-admin	2014-12-10 08:52:20.000000000 +0100
+@@ -7,7 +7,8 @@
+ ##############################################################################
+ 
+ # Add default JVM options here. You can also use JAVA_OPTS to pass JVM options to this script.
+-DEFAULT_JVM_OPTS=""
++DEFAULT_JVM_OPTS="-Dfile.encoding=UTF-8"
++JAVA_HOME="/opt/jdk1.7.0_09"
+ 
+ APP_NAME="xd-admin"
+ APP_BASE_NAME=`basename "$0"`
+@@ -79,6 +80,13 @@ if [ -d "$APP_HOME_LIB" ]; then
+     fi
+ fi
+ 
++APP_HOME_EXT=$APP_HOME/ext
++if [ -d "$APP_HOME_EXT" ]; then
++    for i in "$APP_HOME_EXT"/*.jar; do
++        CLASSPATH="$CLASSPATH":"$i"
++    done
++fi
++
+ # Determine the Java command to use to start the JVM.
+ if [ -n "$JAVA_HOME" ] ; then
+     if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+diff -rupN bin/xd-container customized/xd-container
+--- bin/xd-container	2014-11-18 17:35:30.000000000 +0100
++++ customized/xd-container	2014-12-10 10:16:34.000000000 +0100
+@@ -7,7 +7,8 @@
+ ##############################################################################
+ 
+ # Add default JVM options here. You can also use JAVA_OPTS to pass JVM options to this script.
+-DEFAULT_JVM_OPTS=""
++DEFAULT_JVM_OPTS="-Dfile.encoding=UTF-8"
++JAVA_HOME="/opt/jdk1.7.0_09"
+ 
+ APP_NAME="xd-container"
+ APP_BASE_NAME=`basename "$0"`
+@@ -88,6 +89,13 @@ if [ -d "$APP_HOME_LIB" ]; then
+     fi
+ fi
+ 
++APP_HOME_EXT=$APP_HOME/ext
++if [ -d "$APP_HOME_EXT" ]; then
++    for i in "$APP_HOME_EXT"/*.jar; do
++        CLASSPATH="$CLASSPATH":"$i"
++    done
++fi
++
+ # Determine the Java command to use to start the JVM.
+ if [ -n "$JAVA_HOME" ] ; then
+     if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+diff -rupN bin/xd-singlenode customized/xd-singlenode
+--- bin/xd-singlenode	2014-11-18 17:35:30.000000000 +0100
++++ customized/xd-singlenode	2014-11-27 07:56:04.000000000 +0100
+@@ -7,7 +7,7 @@
+ ##############################################################################
+ 
+ # Add default JVM options here. You can also use JAVA_OPTS and SPRING_XD_ADMIN_OPTS to pass JVM options to this script.
+-DEFAULT_JVM_OPTS=""
++DEFAULT_JVM_OPTS="-Dfile.encoding=UTF-8"
+ 
+ APP_NAME="xd-singlenode"
+ APP_BASE_NAME=`basename "$0"`

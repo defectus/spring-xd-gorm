@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:batch="http://www.springframework.org/schema/batch"
+       xmlns:gorm="http://grails.org/schema/gorm"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+
+
+		http://www.springframework.org/schema/batch
+		http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://grails.org/schema/gorm
+		http://grails.org/schema/gorm/gorm.xsd
+		http://www.springframework.org/schema/util
+		http://www.springframework.org/schema/util/spring-util.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <bean id="sampleReader" class="uk.co.linek.batch.SampleReader" scope="step"/>
+
+    <bean id="sampleWriter" class="uk.co.linek.batch.SampleWriter"/>
+    <bean id="sampleProcessor" class="uk.co.linek.batch.SampleProcessor"/>
+
+    <batch:job id="sampleJob">
+        <batch:step id="sampleStep">
+            <batch:tasklet>
+                <batch:chunk reader="sampleReader"
+                             processor="sampleWriter"
+                             writer="sampleProcessor"
+                             commit-interval="1000"/>
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+
+    <bean id="messageSource"
+          class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="messages"/>
+    </bean>
+
+    <context:component-scan base-package="uk.co.linek"/>
+
+    <bean id="h2DataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <property name="driverClass" value="org.h2.Driver"/>
+        <property name="url"
+                  value="jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+    </bean>
+
+    <gorm:sessionFactory base-package="uk.co.linek.domain" data-source-ref="dataSource"
+                         message-source-ref="messageSource">
+        <property name="hibernateProperties">
+            <util:map>
+                <entry key="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+                <entry key="hibernate.hbm2ddl.auto" value="create"/>
+            </util:map>
+        </property>
+        <property name="eventListeners">
+            <map>
+                <entry key="flush">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener"/>
+                </entry>
+                <entry key="pre-load">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+                <entry key="post-load">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+                <entry key="save">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+                <entry key="save-update">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+                <entry key="post-insert">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+                <entry key="pre-update">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+                <entry key="post-update">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+                <entry key="pre-delete">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+                <entry key="post-delete">
+                    <bean
+                            class="org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor"/>
+                </entry>
+            </map>
+        </property>
+    </gorm:sessionFactory>
+
+</beans>
